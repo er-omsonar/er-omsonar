@@ -1,113 +1,108 @@
 OM CD EXP 3
 
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
-struct Node
-{
+typedef struct Node {
     char data;
-    struct Node *left;
-    struct Node *right;
-};
+    struct Node *left, *right;
+} Node;
 
-char expressionStr[100];
-int pos = 0;
+char s[100];
+int i = 0;
 
-/* Create a new node */
-struct Node* createNode(char data)
+Node* expression();
+Node* term();
+Node* factor();
+
+Node* newNode(char c)
 {
-    struct Node *newNode;
-
-    newNode = (struct Node*)malloc(sizeof(struct Node));
-
-    newNode->data = data;
-    newNode->left = NULL;
-    newNode->right = NULL;
-
-    return newNode;
+    Node *n = (Node*)malloc(sizeof(Node));
+    n->data = c;
+    n->left = n->right = NULL;
+    return n;
 }
 
-/* Function declarations */
-struct Node* expression();
-struct Node* term();
-struct Node* factor();
-
-/* Handle + and - */
-struct Node* expression()
+/* operands and parentheses */
+Node* factor()
 {
-    struct Node *left, *right, *newNode;
+    Node *n;
 
-    left = term();
-
-    while (expressionStr[pos] == '+' ||
-           expressionStr[pos] == '-')
+    if (s[i] == '(')
     {
-        char op = expressionStr[pos];
-        pos++;
+        i++;
+        n = expression();
+        i++;
+        return n;
+    }
 
-        right = term();
+    n = newNode(s[i]);
+    i++;
+    return n;
+}
 
-        newNode = createNode(op);
-        newNode->left = left;
-        newNode->right = right;
+/* * and / */
+Node* term()
+{
+    Node *left = factor();
 
-        left = newNode;
+    while (s[i] == '*' || s[i] == '/')
+    {
+        char op = s[i++];
+        Node *right = factor();
+        Node *n = newNode(op);
+
+        n->left = left;
+        n->right = right;
+        left = n;
     }
 
     return left;
 }
 
-/* Handle * and / */
-struct Node* term()
+/* + and - */
+Node* expression()
 {
-    struct Node *left, *right, *newNode;
+    Node *left = term();
 
-    left = factor();
-
-    while (expressionStr[pos] == '*' ||
-           expressionStr[pos] == '/')
+    while (s[i] == '+' || s[i] == '-')
     {
-        char op = expressionStr[pos];
-        pos++;
+        char op = s[i++];
+        Node *right = term();
+        Node *n = newNode(op);
 
-        right = factor();
-
-        newNode = createNode(op);
-        newNode->left = left;
-        newNode->right = right;
-
-        left = newNode;
+        n->left = left;
+        n->right = right;
+        left = n;
     }
 
     return left;
 }
 
-/* Handle operands and parentheses */
-struct Node* factor()
+/* Print tree sideways */
+void printTree(Node *root, int space)
 {
-    struct Node *node;
+    if (root == NULL)
+        return;
 
-    if (expressionStr[pos] == '(')
-    {
-        pos++;
+    space += 5;
 
-        node = expression();
+    printTree(root->right, space);
 
-        pos++;          /* skip ')' */
+    printf("\n");
+    for (int j = 5; j < space; j++)
+        printf(" ");
 
-        return node;
-    }
+    printf("%c\n", root->data);
 
-    node = createNode(expressionStr[pos]);
-    pos++;
-
-    return node;
+    printTree(root->left, space);
 }
 
-/* Preorder traversal */
-void preorder(struct Node *root)
+void preorder(Node *root)
 {
-    if (root != NULL)
+    if (root)
     {
         printf("%c ", root->data);
         preorder(root->left);
@@ -115,10 +110,9 @@ void preorder(struct Node *root)
     }
 }
 
-/* Inorder traversal */
-void inorder(struct Node *root)
+void inorder(Node *root)
 {
-    if (root != NULL)
+    if (root)
     {
         inorder(root->left);
         printf("%c ", root->data);
@@ -126,10 +120,9 @@ void inorder(struct Node *root)
     }
 }
 
-/* Postorder traversal */
-void postorder(struct Node *root)
+void postorder(Node *root)
 {
-    if (root != NULL)
+    if (root)
     {
         postorder(root->left);
         postorder(root->right);
@@ -137,39 +130,17 @@ void postorder(struct Node *root)
     }
 }
 
-/* Display syntax tree */
-void display(struct Node *root, int level)
-{
-    int i;
-
-    if (root == NULL)
-        return;
-
-    /* Display right subtree */
-    display(root->right, level + 1);
-
-    /* Print spaces */
-    for (i = 0; i < level; i++)
-        printf("        ");
-
-    printf("%c\n", root->data);
-
-    /* Display left subtree */
-    display(root->left, level + 1);
-}
-
 int main()
 {
-    struct Node *root;
+    Node *root;
 
     printf("Enter expression: ");
-    scanf("%s", expressionStr);
+    scanf("%s", s);
 
     root = expression();
 
-    printf("\nSyntax Tree:\n\n");
-
-    display(root, 0);
+    printf("\nSyntax Tree:\n");
+    printTree(root, 0);
 
     printf("\nPreorder: ");
     preorder(root);
@@ -179,8 +150,6 @@ int main()
 
     printf("\nPostorder: ");
     postorder(root);
-
-    printf("\n");
 
     return 0;
 }
