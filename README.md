@@ -1,347 +1,186 @@
-Kunal CD 
-1.   VS CODE VERSION
-
+OM CD EXP 3
 
 #include <stdio.h>
-#include <ctype.h>
 #include <stdlib.h>
 
-#define NUM 256
-#define ID 257
-#define DONE 0
-
-char input[100];
-char lexeme[100];
-int pos = 0;
-int token;
-
-void lexer()
+struct Node
 {
-    int i = 0;
+    char data;
+    struct Node *left;
+    struct Node *right;
+};
 
-    while (isspace(input[pos]))
+char expressionStr[100];
+int pos = 0;
+
+/* Create a new node */
+struct Node* createNode(char data)
+{
+    struct Node *newNode;
+
+    newNode = (struct Node*)malloc(sizeof(struct Node));
+
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+
+    return newNode;
+}
+
+/* Function declarations */
+struct Node* expression();
+struct Node* term();
+struct Node* factor();
+
+/* Handle + and - */
+struct Node* expression()
+{
+    struct Node *left, *right, *newNode;
+
+    left = term();
+
+    while (expressionStr[pos] == '+' ||
+           expressionStr[pos] == '-')
+    {
+        char op = expressionStr[pos];
         pos++;
 
-    if (isalpha(input[pos]))
-    {
-        while (isalnum(input[pos]))
-            lexeme[i++] = input[pos++];
+        right = term();
 
-        lexeme[i] = '\0';
-        token = ID;
-    }
-    else if (isdigit(input[pos]))
-    {
-        while (isdigit(input[pos]))
-            lexeme[i++] = input[pos++];
+        newNode = createNode(op);
+        newNode->left = left;
+        newNode->right = right;
 
-        lexeme[i] = '\0';
-        token = NUM;
+        left = newNode;
     }
-    else if (input[pos] == '\0')
+
+    return left;
+}
+
+/* Handle * and / */
+struct Node* term()
+{
+    struct Node *left, *right, *newNode;
+
+    left = factor();
+
+    while (expressionStr[pos] == '*' ||
+           expressionStr[pos] == '/')
     {
-        token = DONE;
+        char op = expressionStr[pos];
+        pos++;
+
+        right = factor();
+
+        newNode = createNode(op);
+        newNode->left = left;
+        newNode->right = right;
+
+        left = newNode;
     }
-    else
+
+    return left;
+}
+
+/* Handle operands and parentheses */
+struct Node* factor()
+{
+    struct Node *node;
+
+    if (expressionStr[pos] == '(')
     {
-        token = input[pos++];
+        pos++;
+
+        node = expression();
+
+        pos++;          /* skip ')' */
+
+        return node;
+    }
+
+    node = createNode(expressionStr[pos]);
+    pos++;
+
+    return node;
+}
+
+/* Preorder traversal */
+void preorder(struct Node *root)
+{
+    if (root != NULL)
+    {
+        printf("%c ", root->data);
+        preorder(root->left);
+        preorder(root->right);
     }
 }
 
-void error()
+/* Inorder traversal */
+void inorder(struct Node *root)
 {
-    printf("\nString Rejected\n");
-    exit(0);
-}
-
-void Match(int t)
-{
-    if (token == t)
-        lexer();
-    else
-        error();
-}
-
-void E();
-void T();
-void F();
-
-void F()
-{
-    if (token == '(')
+    if (root != NULL)
     {
-        Match('(');
-        E();
-        Match(')');
-    }
-    else if (token == ID || token == NUM)
-    {
-        printf("%s ", lexeme);
-        Match(token);
-    }
-    else
-        error();
-}
-
-void T()
-{
-    int op;
-
-    F();
-
-    while (token == '*' || token == '/')
-    {
-        op = token;
-        Match(op);
-        F();
-        printf("%c ", op);
+        inorder(root->left);
+        printf("%c ", root->data);
+        inorder(root->right);
     }
 }
 
-void E()
+/* Postorder traversal */
+void postorder(struct Node *root)
 {
-    int op;
-
-    T();
-
-    while (token == '+' || token == '-')
+    if (root != NULL)
     {
-        op = token;
-        Match(op);
-        T();
-        printf("%c ", op);
+        postorder(root->left);
+        postorder(root->right);
+        printf("%c ", root->data);
     }
+}
+
+/* Display syntax tree */
+void display(struct Node *root, int level)
+{
+    int i;
+
+    if (root == NULL)
+        return;
+
+    /* Display right subtree */
+    display(root->right, level + 1);
+
+    /* Print spaces */
+    for (i = 0; i < level; i++)
+        printf("        ");
+
+    printf("%c\n", root->data);
+
+    /* Display left subtree */
+    display(root->left, level + 1);
 }
 
 int main()
 {
-    printf("PROGRAM FOR RECURSIVE DESCENT PREDICTIVE PARSING\n");
+    struct Node *root;
 
-    printf("\nEnter arithmetic expressions.");
-    printf("\nUse semicolon (;) at the end of each expression.\n");
-    printf("\nExample: a+b*c;\n");
+    printf("Enter expression: ");
+    scanf("%s", expressionStr);
 
-    fgets(input, sizeof(input), stdin);
+    root = expression();
 
-    lexer();
+    printf("\nSyntax Tree:\n\n");
 
-    while (token != DONE)
-    {
-        printf("\nPostfix Expression: ");
+    display(root, 0);
 
-        E();
+    printf("\nPreorder: ");
+    preorder(root);
 
-        Match(';');
+    printf("\nInorder: ");
+    inorder(root);
 
-        printf("\nExpression successfully parsed.\n");
-    }
+    printf("\nPostorder: ");
+    postorder(root);
 
-    printf("\nParsing completed.\n");
+    printf("\n");
 
     return 0;
 }
-
-
-## Compile:
-gcc predictive.c -o predictive
-.\predictive.exe
-
-
-
-
-
-
-
-
-
-
-KUNAL CD
-2.  TURBO C VERSION
-
-
-#include <stdio.h>
-#include <ctype.h>
-#include <stdlib.h>
-
-#define NUM 256
-#define ID 257
-#define DONE 0
-
-char input[100];
-char lexeme[100];
-int pos = 0;
-int token;
-
-void lexer()
-{
-    int i = 0;
-
-    while (isspace(input[pos]))
-        pos++;
-
-    if (isalpha(input[pos]))
-    {
-        while (isalnum(input[pos]))
-            lexeme[i++] = input[pos++];
-
-        lexeme[i] = '\0';
-        token = ID;
-    }
-    else if (isdigit(input[pos]))
-    {
-        while (isdigit(input[pos]))
-            lexeme[i++] = input[pos++];
-
-        lexeme[i] = '\0';
-        token = NUM;
-    }
-    else if (input[pos] == '\0')
-    {
-        token = DONE;
-    }
-    else
-    {
-        token = input[pos++];
-    }
-}
-
-void error()
-{
-    printf("\nString Rejected\n");
-    exit(0);
-}
-
-void Match(int t)
-{
-    if (token == t)
-        lexer();
-    else
-        error();
-}
-
-void E();
-void T();
-void F();
-
-void F()
-{
-    if (token == '(')
-    {
-        Match('(');
-        E();
-        Match(')');
-    }
-    else if (token == ID || token == NUM)
-    {
-        printf("%s ", lexeme);
-        Match(token);
-    }
-    else
-        error();
-}
-
-void T()
-{
-    int op;
-
-    F();
-
-    while (token == '*' || token == '/')
-    {
-        op = token;
-        Match(op);
-        F();
-        printf("%c ", op);
-    }
-}
-
-void E()
-{
-    int op;
-
-    T();
-
-    while (token == '+' || token == '-')
-    {
-        op = token;
-        Match(op);
-        T();
-        printf("%c ", op);
-    }
-}
-
-int main()
-{
-    printf("PROGRAM FOR RECURSIVE DESCENT PREDICTIVE PARSING\n");
-
-    printf("\nEnter arithmetic expressions.");
-    printf("\nUse semicolon (;) at the end of each expression.\n");
-    printf("\nExample: a+b*c;\n");
-
-    gets(input);
-
-    lexer();
-
-    while (token != DONE)
-    {
-        printf("\nPostfix Expression: ");
-
-        E();
-
-        Match(';');
-
-        printf("\nExpression successfully parsed.\n");
-    }
-
-    printf("\nParsing completed.\n");
-
-    getch();
-    return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1.OM ATL 
-#code 
-library(shiny)
-
-ui <- fluidPage(
-  
-  titlePanel("My First Shiny App"),
-  
-  sidebarLayout(
-    position = "right",
-    
-    sidebarPanel(
-      "This is the Sidebar Panel"
-    ),
-    
-    mainPanel(
-      "This is the Main Panel"
-    )
-  )
-)
-
-server <- function(input, output) {
-  
-}
-
-shinyApp(ui = ui, server = server)
-
-
-
-#Console command 
-install.packages("shiny")
-library(shiny)
