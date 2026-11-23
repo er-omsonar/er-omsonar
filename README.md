@@ -1,3 +1,92 @@
+ATL  3
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+data = {
+    'Country': ['India', 'USA', 'Italy', 'Brazil', 'China', 'Spain'],
+    'Confirmed': [1000, 2000, 1500, 1200, 800, 1300],
+    'Deaths': [50, 100, 80, 60, 40, 50],
+    'Recovered': [200, 500, 400, 300, 250, 200]
+}
+
+
+df = pd.DataFrame(data)
+
+# Display dataset
+print("COVID-19 Dataset:")
+print(df)
+
+# Data Analytics
+df['Active'] = df['Confirmed'] - df['Deaths'] - df['Recovered']
+
+print("\nCOVID-19 Analysis:")
+print(df)
+
+# Statistical Analysis using NumPy
+cases = np.array(df['Confirmed'])
+
+print("\nData Analysis:")
+print("Maximum Cases:", np.max(cases))
+print("Minimum Cases:", np.min(cases))
+print("Mean Cases:", np.mean(cases))
+print("Standard Deviation:", np.std(cases))
+
+# Bar Chart
+plt.figure(figsize=(8, 5))
+plt.bar(df['Country'], df['Confirmed'])
+plt.title("Country-wise Confirmed Cases")
+plt.xlabel("Country")
+plt.ylabel("Confirmed Cases")
+plt.show()
+
+# Line Chart
+plt.figure(figsize=(8, 5))
+plt.plot(df['Country'], df['Confirmed'], marker='o')
+plt.title("COVID-19 Cases")
+plt.xlabel("Country")
+plt.ylabel("Confirmed Cases")
+plt.grid()
+plt.show()
+
+# Pie Chart
+plt.figure(figsize=(8, 5))
+plt.pie(df['Confirmed'], labels=df['Country'], autopct='%1.1f%%')
+plt.title("COVID-19 Cases Distribution")
+plt.show()
+
+# Histogram
+plt.figure(figsize=(8, 5))
+plt.hist(df['Confirmed'], bins=5)
+plt.title("Distribution of COVID-19 Cases")
+plt.xlabel("Confirmed Cases")
+plt.ylabel("Frequency")
+plt.show()
+
+python -m pip install numpy pandas matplotlib
+python -m pip install -- upgrade pip
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 OM CD EXP 3
 
 
